@@ -10,6 +10,7 @@ pandas = "==1.4.2"
 seaborn = "==0.11.2"
 scikit-learn = "==1.0.2"
 pyspark = "==3.0.0"
+mlflow = "==1.10.0"
 
 [dev-packages]
 ipykernel = "*"
