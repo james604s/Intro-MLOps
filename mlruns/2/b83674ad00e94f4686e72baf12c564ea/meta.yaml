@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/sq/Big_Data/Intro-MLOps/mlruns/2/b83674ad00e94f4686e72baf12c564ea/artifacts
+end_time: 1650447423723
+entry_point_name: ''
+experiment_id: '2'
+lifecycle_stage: active
+name: ''
+run_id: b83674ad00e94f4686e72baf12c564ea
+run_uuid: b83674ad00e94f4686e72baf12c564ea
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1650447420075
+status: 3
+tags: []
+user_id: sq

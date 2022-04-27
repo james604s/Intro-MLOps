@@ -131,3 +131,72 @@ mlflow.end_run()
 # loaded_model = mlflow.sklearn.load_model("runs:/YOUR_RUNID_HERE/log_reg_model")
 loaded_model = mlflow.sklearn.load_model("runs:/f23c101d414e43be877210a6f954a1cd/log_reg_model")
 loaded_model.score(x_test, y_test)
+
+
+#################################### Model Validation (Parameter Tuning) with MLFlow####################################
+#Parameter Tuning – Broad Search
+anomaly_weights = [1, 5, 10, 15]
+num_folds = 5
+kfold = KFold(n_splits=num_folds, shuffle=True, random_state=2020)
+
+mlflow.set_experiment("sklearn_creditcard_broad_search") 
+logs = []
+for f in range(len(anomaly_weights)):
+    fold = 1
+    accuracies = []
+    auc_scores= []
+    for train, test in kfold.split(x_validate, y_validate):
+        with mlflow.start_run():
+            weight = anomaly_weights[f] 
+            mlflow.log_param("anomaly_weight", weight)
+            class_weights= {
+                0: 1,
+                1: weight 
+            }
+            sk_model = LogisticRegression(random_state=None, max_iter=400,
+                                                solver='newton-cg',
+                                                class_weight=class_weights).fit(x_validate[train],y_validate[train])
+            for h in range(40): 
+                print('-', end="")
+                print(f"\nfold {fold}\nAnomaly Weight: {weight}")
+                train_acc = sk_model.score(x_validate[train],y_validate[train])
+                mlflow.log_metric("train_acc", train_acc)
+                eval_acc = sk_model.score(x_validate[test],y_validate[test])
+                preds = sk_model.predict(x_validate[test])
+                mlflow.log_metric("eval_acc", eval_acc)
+            #Here is some more of the code. Make sure this all aligns with the code from above.
+            try:
+                auc_score = roc_auc_score(y_validate[test], preds)
+            except:
+                auc_score = -1
+                mlflow.log_metric("auc_score", auc_score)
+                print("AUC: {}\neval_acc: {}".format(auc_score,
+                eval_acc))
+                accuracies.append(eval_acc)
+                auc_scores.append(auc_score)
+                log = [sk_model, x_validate[test],
+                y_validate[test], preds]
+                logs.append(log)
+                mlflow.sklearn.log_model(sk_model,
+                f"anom_weight_{weight}_fold_{fold}")
+                fold = fold + 1
+                mlflow.end_run()
+print("\nAverages: ")
+print("Accuracy: ", np.mean(accuracies))
+print("AUC: ", np.mean(auc_scores))
+print("Best: ")
+print("Accuracy: ", np.max(accuracies))
+print("AUC: ", np.max(auc_scores))
+
+
+#metrics."auc_score" >= 0.90
+#metrics."auc_score" >= 0.90 AND parameters.anomaly_weight = "5"
+#parameters.anomaly_weight = "1"
+
+
+#Parameter Tuning – Guided Search
+#The best overall performances were achieved by anomaly weights 10 and 15, but it seems to be on an upward trend the higher up you go with the anomaly weight. Now that you know this, let’s try another validation run with a broader range of anomaly weights to try.
+anomaly_weights = [10, 50, 100, 150, 200]
+mlflow.set_experiment("sklearn_creditcard_guided_search")
+
+#parameters.anomaly_weight = "10"
