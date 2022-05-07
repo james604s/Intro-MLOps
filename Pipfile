@@ -12,6 +12,9 @@ scikit-learn = "==1.0.2"
 pyspark = "==3.0.0"
 mlflow = "==1.10.0"
 google-cloud-storage = "*"
+wheel = "*"
+setuptools = "*"
+feast = "==0.19.3"
 
 [dev-packages]
 ipykernel = "*"
